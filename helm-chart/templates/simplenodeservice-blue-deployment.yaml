@@ -1,0 +1,43 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: simplenodeservice-blue
+  labels:
+    app: {{ .Chart.Name }}-selector-simplenodeservice
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: {{ .Values.simplenodeserviceBlue.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}-selector-simplenodeservice
+        deployment: simplenodeservice-blue
+    spec:
+      containers:
+      - name: {{ .Values.simplenodeserviceBlue.container.name }}
+        image: "{{ .Values.simplenodeserviceBlue.image.repository }}:{{ .Values.simplenodeserviceBlue.image.tag }}"
+        imagePullPolicy: {{ .Values.simplenodeserviceBlue.image.pullPolicy }}
+        env:
+        - name: DT_TAGS
+          value: "application={{ .Chart.Name }}"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: "metadata.name"
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: "metadata.namespace"
+        - name: DEPLOYMENT_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: "metadata.labels['deployment']"
+        - name: CONTAINER_IMAGE
+          value: "{{ .Values.simplenodeserviceBlue.image.repository }}:{{ .Values.simplenodeserviceBlue.image.tag }}"
+        ports:
+        - name: internalport
+          containerPort: {{ .Values.simplenodeserviceBlue.service.internalPort }}
+        resources:
+{{ toYaml .Values.resources | indent 12 }}
